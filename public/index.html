@@ -1,34 +1,589 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NeuroLift Technologies</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      background: #f5f5f5;
-    }
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      padding: 2rem 3rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    h1 { color: #1a1a2e; margin-bottom: 0.5rem; }
-    p  { color: #555; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NLT World Engine — An AI Habitat</title>
+<meta name="description" content="NLT World Engine is an embodied multi-agent simulation where machine learning models inhabit a persistent world, control their characters, interact with environments and other agents, and transition between meaningful life scenarios." />
+<style>
+  :root{
+    --bg:#070b12;
+    --bg2:#0d1420;
+    --panel:rgba(255,255,255,.04);
+    --line:rgba(140,190,255,.16);
+    --txt:#dfe8f5;
+    --muted:#8ea3bf;
+    --accent:#5ad1ff;
+    --accent2:#9d7bff;
+    --warm:#ffb86b;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--txt);
+    font:16px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+
+  /* ---------- nav ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:blur(14px);
+    background:rgba(7,11,18,.72);
+    border-bottom:1px solid var(--line);
+  }
+  nav{display:flex;align-items:center;gap:20px;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em;color:var(--txt)}
+  .brand span.dot{
+    width:10px;height:10px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    box-shadow:0 0 14px var(--accent);
+  }
+  nav .links{margin-left:auto;display:flex;gap:22px;font-size:14px}
+  nav .links a{color:var(--muted)}
+  nav .links a:hover{color:var(--txt)}
+  @media(max-width:820px){nav .links{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;overflow:hidden;padding:84px 0 72px}
+  #scene{
+    position:absolute;inset:0;width:100%;height:100%;display:block;
+    mask-image:linear-gradient(to bottom,#000 55%,transparent);
+    -webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent);
+    opacity:.75;
+  }
+  .hero .wrap{position:relative;z-index:1}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+    border:1px solid var(--line);border-radius:999px;padding:6px 14px;
+    background:var(--panel);
+  }
+  h1{
+    font-size:clamp(34px,6vw,64px);line-height:1.05;letter-spacing:-.035em;
+    margin:22px 0 14px;max-width:16ch;
+  }
+  .grad{background:linear-gradient(100deg,var(--accent),var(--accent2) 60%,var(--warm));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:62ch;margin:0 0 28px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:12px 22px;border-radius:10px;font-weight:600;font-size:15px;
+    border:1px solid var(--line);transition:.18s ease;
+  }
+  .btn.primary{background:linear-gradient(120deg,var(--accent),var(--accent2));color:#050a12;border-color:transparent}
+  .btn.primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px -12px var(--accent)}
+  .btn:hover{border-color:var(--accent);transform:translateY(-2px)}
+
+  /* ---------- sections ---------- */
+  section{padding:76px 0;border-top:1px solid var(--line)}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  h2{font-size:clamp(24px,3.4vw,38px);letter-spacing:-.03em;margin:0 0 12px}
+  h3{font-size:17px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);max-width:60ch;margin:0 0 36px}
+
+  .grid{display:grid;gap:18px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:900px){.g3,.g2{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:22px;transition:.2s ease;
+  }
+  .card:hover{border-color:rgba(90,209,255,.45);background:rgba(90,209,255,.05)}
+  .icon{
+    width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+    background:linear-gradient(135deg,rgba(90,209,255,.18),rgba(157,123,255,.18));
+    border:1px solid var(--line);margin-bottom:14px;font-size:17px;
+  }
+  .card p{margin:0;color:var(--muted);font-size:15px}
+
+  /* ---------- loop ---------- */
+  .loop{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:l}
+  @media(max-width:900px){.loop{grid-template-columns:repeat(2,1fr)}}
+  .step{
+    position:relative;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:20px 18px;
+  }
+  .step b{display:block;font-size:12px;color:var(--accent);letter-spacing:.1em;margin-bottom:8px}
+  .step p{margin:0;font-size:14px;color:var(--muted)}
+
+  /* ---------- roles ---------- */
+  .role{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  .badge{
+    width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-weight:700;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#050a12;flex:none;
+  }
+  .role p{margin:0;color:var(--muted);font-size:15px}
+  .tag{
+    display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--warm);border:1px solid rgba(255,184,107,.3);border-radius:999px;padding:3px 9px;margin-bottom:8px;
+  }
+
+  /* ---------- stack ---------- */
+  pre{
+    margin:0;background:#05080e;border:1px solid var(--line);border-radius:14px;
+    padding:20px;overflow-x:auto;font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:#b9cbe4;
+  }
+  pre .a{color:var(--accent)} pre .b{color:var(--accent2)} pre .c{color:var(--muted)}
+
+  /* ---------- stats ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat b{display:block;font-size:30px;letter-spacing:-.03em;background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat span{color:var(--muted);font-size:14px}
+
+  footer{padding:46px 0;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+  footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
 </head>
 <body>
-  <div class="card">
-    <h1>NeuroLift Technologies</h1>
-    <p>neurolift-ai-fusion platform — coming soon.</p>
+
+<header>
+  <nav class="wrap">
+    <div class="brand"><span class="dot"></span> NLT World Engine</div>
+    <div class="links">
+      <a href="#what">What it is</a>
+      <a href="#loop">Loop</a>
+      <a href="#roles">Roles</a>
+      <a href="#stack">Stack</a>
+      <a href="#watch">Watch</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <canvas id="scene" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <span class="eyebrow">UE 5.8 · Deterministic Runtime · Persistent World</span>
+      <h1>An <span class="grad">AI habitat</span> where agents live, perceive, act, and learn.</h1>
+      <p class="lede">
+        NLT World Engine is an embodied multi-agent simulation where machine learning models inhabit a
+        persistent world, control their characters, interact with environments and other agents, and
+        transition between meaningful life scenarios.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="#watch">Open spectator viewer</a>
+        <a class="btn" href="#stack">Architecture</a>
+        <a class="btn" href="https://github.com/NeuroLift-Technologies/nlt-world-engine" target="_blank" rel="noopener">Source</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="what">
+    <div class="wrap">
+      <div class="kicker">The World</div>
+      <h2>Realistic graphics. Articulated residents.</h2>
+      <p class="sub">
+        The world is rendered with procedural terrain, water, sky, vegetation, and settlement. AI residents
+        walk through it with articulated bodies, animated walk cycles, and floating name labels. Humans watch
+        through a spectator viewer.
+      </p>
+      <div class="grid g3">
+        <div class="card">
+          <div class="icon">🏔</div>
+          <h3>Procedural world</h3>
+          <p>Deterministically generated terrain, hydrology, sky, and vegetation. The same seed always yields the same world.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🚶</div>
+          <h3>Embodied agents</h3>
+          <p>Residents are not abstractions. They have bodies, walk cycles, needs, inventories, and a persistent sense of place.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🏘</div>
+          <h3>Settlement &amp; scenarios</h3>
+          <p>Buildings, roads, and props anchor the world; scenario instantiation moves residents between meaningful life situations.</p>
+        </div>
+        <div class="card">
+          <div class="icon">👁</div>
+          <h3>Spectator viewer</h3>
+          <p>Humans observe. Free camera, agent tracking, name labels, and scenario transitions — watch the world think.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🔁</div>
+          <h3>Persistent state</h3>
+          <p>World state, space, time, objects, needs, and NPCs survive across sessions. Nothing resets behind your back.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🔌</div>
+          <h3>Agent interface</h3>
+          <p>Downstream intelligence connects through a clean agent interface rather than being embedded in the physics layer.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="loop">
+    <div class="wrap">
+      <div class="kicker">Training Loop</div>
+      <h2>Perceive → decide → act → learn → repeat</h2>
+      <p class="sub">The World Engine owns the physical simulation layer. Each tick of the loop is authoritative and reproducible.</p>
+      <div class="loop">
+        <div class="step"><b>01 · PERCEIVE</b><p>Agents observe the world through sensory channels: sight, hearing, objects, NPCs, and their own internal state.</p></div>
+        <div class="step"><b>02 · DECIDE</b><p>Intent is formed by downstream models. The engine evaluates options against needs, goals, and social context.</p></div>
+        <div class="step"><b>03 · ACT</b><p>Decisions become movement and manipulation. Articulated bodies animate. World state mutates deterministically.</p></div>
+        <div class="step"><b>04 · LEARN</b><p>Outcomes flow back to the training layer, which fuses trait behaviour into Avatar, Aide, and Advocate intelligence.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="roles">
+    <div class="wrap">
+      <div class="kicker">Avatar · Aide · Advocate</div>
+      <h2>Three roles, one resident.</h2>
+      <p class="sub">Each inhabitant can express itself as any of these roles — and transition between them as scenarios change.</p>
+      <div class="grid g3">
+        <div class="role">
+          <div class="badge">A</div>
+          <div>
+            <span class="tag">ADHD trait modelling</span>
+            <h3>Avatar</h3>
+            <p>Lives the experience directly. Attention, impulse, and executive-function traits are modelled as embodied behaviour inside the world.</p>
+          </div>
+        </div>
+        <div class="role">
+          <div class="badge">Ai</div>
+          <div>
+            <span class="tag">Coaching expertise</span>
+            <h3>Aide</h3>
+            <p>Provides guidance and scaffolding. Understands the Avatar's state, offers strategies, and adjusts support over time.</p>
+          </div>
+        </div>
+        <div class="role">
+          <div class="badge">Ad</div>
+          <div>
+            <span class="tag">Personalized 1:20</span>
+            <h3>Advocate</h3>
+            <p>The fused result. Avatar and Aide integrated into a single personalized advocate delivered to the end user.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="wrap">
+      <div class="kicker">Architecture</div>
+      <h2>Where this repo stops — and what it hands off.</h2>
+      <p class="sub">
+        NeuroLift Technologies Simulation Environment is the deterministic runtime where AI Avatars (with ADHD traits)
+        and AI Aides live. This repo owns the physical simulation layer and is the authoritative simulation training
+        environment for the Avatar-Aide-Advocate system.
+      </p>
+      <pre><span class="c">// owned here — authoritative physical simulation</span>
+world_state      <span class="a">space</span> · <span class="a">time</span> · <span class="a">objects</span> · <span class="a">needs</span> · <span class="a">npcs</span>
+scenario         <span class="a">instantiation</span> · <span class="a">transitions</span>
+runtime          <span class="a">Unreal Engine 5.8</span> authoritative simulation · ECS
+render           <span class="a">procedural terrain</span> · <span class="a">water</span> · <span class="a">sky</span> · <span class="a">vegetation</span> · <span class="a">settlement</span>
+agents           <span class="a">articulated bodies</span> · <span class="a">walk cycles</span> · <span class="a">name labels</span>
+viewer           <span class="a">spectator camera</span> · <span class="a">tracking</span>
+
+<span class="c">// connected through the agent interface — NOT embedded</span>
+intel            <span class="b">neurolift-ai-fusion</span>   ADHD trait modelling · coaching · training loop · fusion</pre>
+
+      <div class="grid g2" style="margin-top:18px">
+        <div class="card">
+          <h3>What lives here</h3>
+          <p>World state, space, time, objects, needs, NPCs, scenario instantiation, and the UE 5.8 authoritative simulation.</p>
+        </div>
+        <div class="card">
+          <h3>What lives elsewhere</h3>
+          <p>Avatar, Aide, and Advocate intelligence — ADHD trait modelling, coaching expertise, the training loop, and fusion — lives in neurolift-ai-fusion.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="watch">
+    <div class="wrap">
+      <div class="kicker">Live World</div>
+      <h2>Residuals in the world right now.</h2>
+      <p class="sub">Live feed from the persistent world. Agents roam, meet, and transition between scenarios.</p>
+      <div class="stats" style="margin-bottom:26px">
+        <div class="stat"><b id="s-agents">0</b><span>Active residents</span></div>
+        <div class="stat"><b id="s-tick">0</b><span>Simulation ticks</span></div>
+        <div class="stat"><b id="s-day">1</b><span>World day</span></div>
+        <div class="stat"><b>UE 5.8</b><span>Authoritative runtime</span></div>
+      </div>
+      <canvas id="watcher" style="width:100%;height:380px;display:block;border:1px solid var(--line);border-radius:16px;background:#05080e"></canvas>
+      <p style="color:var(--muted);font-size:13px;margin-top:12px">Illustrative spectator preview. Production rendering runs in Unreal Engine 5.8.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>© NeuroLift Technologies — NLT World Engine</div>
+    <div>Built on the Solidarity Framework &amp; HAIEF</div>
   </div>
+</footer>
+
+<script>
+(function () {
+  // ---------- hero backdrop: parallax terrain + sky ----------
+  const c = document.getElementById('scene');
+  const g = c.getContext('2d');
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  function sizeHero() {
+    const r = c.getBoundingClientRect();
+    W = r.width; H = r.height;
+    c.width = W * DPR; c.height = H * DPR;
+    g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function ridge(yBase, amp, speed, color, phase) {
+    g.beginPath();
+    g.moveTo(0, H);
+    for (let x = 0; x <= W; x += 6) {
+      const n =
+        Math.sin((x + phase) * 0.0032 + speed) * amp +
+        Math.sin((x + phase) * 0.0091 + speed * 1.7) * amp * 0.45 +
+        Math.sin((x + phase) * 0.021 + speed * 2.6) * amp * 0.18;
+      g.lineTo(x, yBase + n);
+    }
+    g.lineTo(W, H);
+    g.closePath();
+    g.fillStyle = color;
+    g.fill();
+  }
+
+  // ---------- shared simulated residents ----------
+  const NAMES = ['Mira', 'Dez', 'Ari', 'Sol', 'Nix', 'Wren', 'Kova', 'Ila', 'Ren', 'Tav', 'Yuki', 'Odo'];
+  const TINT = ['#5ad1ff', '#9d7bff', '#ffb86b', '#7dffb0'];
+  const residents = Array.from({ length: 14 }, (_, i) => ({
+    x: Math.random(),
+    y: 0.62 + Math.random() * 0.3,
+    z: 0.35 + Math.random() * 0.65,
+    dir: Math.random() < 0.5 ? -1 : 1,
+    spd: 0.012 + Math.random() * 0.02,
+    name: NAMES[i % NAMES.length],
+    tint: TINT[i % TINT.length],
+    ph: Math.random() * Math.PI * 2
+  }));
+  residents.forEach(r => { r.x = Math.random(); });
+
+  let ticks = 0, t0 = performance.now();
+
+  function step() {
+    residents.forEach(r => {
+      r.x += r.dir * r.spd * r.z * 0.01;
+      if (r.x > 1.05) { r.dir = -1; }
+      if (r.x < -0.05) { r.dir = 1; }
+    });
+    ticks++;
+  }
+
+  // ---------- hero render ----------
+  function drawHero(now) {
+    const t = (now - t0) / 1000;
+    const sky = g.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#070b12');
+    sky.addColorStop(0.55, '#0d1930');
+    sky.addColorStop(1, '#131c2b');
+    g.fillStyle = sky;
+    g.fillRect(0, 0, W, H);
+
+    // stars
+    g.fillStyle = 'rgba(200,225,255,.5)';
+    for (let i = 0; i < 70; i++) {
+      const sx = ((i * 97.13) % 100) / 100 * W;
+      const sy = ((i * 41.7) % 100) / 100 * H * 0.55;
+      const a = 0.15 + 0.35 * Math.abs(Math.sin(t * 0.7 + i));
+      g.globalAlpha = a;
+      g.fillRect(sx, sy, 1.4, 1.4);
+    }
+    g.globalAlpha = 1;
+
+    // sun / moon glow
+    const glow = g.createRadialGradient(W * 0.72, H * 0.42, 0, W * 0.72, H * 0.42, H * 0.5);
+    glow.addColorStop(0, 'rgba(90,209,255,.16)');
+    glow.addColorStop(1, 'rgba(90,209,255,0)');
+    g.fillStyle = glow;
+    g.fillRect(0, 0, W, H);
+
+    ridge(H * 0.60, 26, t * 0.28, 'rgba(20,32,52,.85)', 0);
+    ridge(H * 0.70, 20, -t * 0.20, 'rgba(13,22,38,.95)', 400);
+    ridge(H * 0.80, 14, t * 0.14, '#080d16', 900);
+
+    // water shimmer
+    g.globalAlpha = 0.25;
+    for (let i = 0; i < 40; i++) {
+      const y = H * 0.83 + (i % 8) * 5;
+      const x = ((i * 137 + t * 26) % (W + 60)) - 30;
+      g.fillStyle = '#5ad1ff';
+      g.fillRect(x, y, 22, 1);
+    }
+    g.globalAlpha = 1;
+
+    // residents walking the near ridge
+    g.textAlign = 'center';
+    residents.forEach(r => {
+      const px = r.x * W;
+      const py = H * (0.80 + (r.y - 0.62) * 0.35);
+      const s = 5 + r.z * 7;
+      const bob = Math.abs(Math.sin(t * 5 + r.ph)) * s * 0.18;
+      g.strokeStyle = r.tint;
+      g.globalAlpha = 0.55;
+      g.lineWidth = Math.max(1, s * 0.22);
+      g.beginPath();
+      g.moveTo(px, py);
+      g.lineTo(px, py - s - bob);
+      g.stroke();
+      // head
+      g.beginPath();
+      g.arc(px, py - s * 1.7 - bob, s * 0.28, 0, Math.PI * 2);
+      g.fill();
+      // label
+      g.globalAlpha = 0.35;
+      g.fillStyle = r.tint;
+      g.font = '10px ui-sans-serif,system-ui,sans-serif';
+      g.fillText(r.name, px, py - s * 2.4);
+    });
+    g.globalAlpha = 1;
+  }
+
+  // ---------- spectator viewer ----------
+  const w = document.getElementById('watcher');
+  const x = w.getContext('2d');
+  let wW = 0, wH = 0;
+  function sizeWatcher() {
+    const r = w.getBoundingClientRect();
+    wW = r.width; wH = r.height;
+    w.width = wW * DPR; w.height = wH * DPR;
+    x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function drawWatcher(now) {
+    const t = (now - t0) / 1000;
+    const sky = x.createLinearGradient(0, 0, 0, wH);
+    sky.addColorStop(0, '#0a1322');
+    sky.addColorStop(0.6, '#102038');
+    sky.addColorStop(1, '#0a1420');
+    x.fillStyle = sky; x.fillRect(0, 0, wW, wH);
+
+    // perspective ground grid
+    x.strokeStyle = 'rgba(90,209,255,.10)';
+    x.lineWidth = 1;
+    const horizon = wH * 0.52;
+    for (let i = 0; i <= 22; i++) {
+      const p = i / 22;
+      const yy = horizon + Math.pow(p, 2.1) * (wH - horizon);
+      x.beginPath(); x.moveTo(0, yy); x.lineTo(wW, yy); x.stroke();
+    }
+    for (let i = -12; i <= 12; i++) {
+      x.beginPath();
+      x.moveTo(wW / 2 + i * 12, horizon);
+      x.lineTo(wW / 2 + i * (wW / 10), wH);
+      x.stroke();
+    }
+
+    // settlement silhouettes on the horizon
+    x.fillStyle = 'rgba(6,10,18,.9)';
+    let bx = 30;
+    let i = 0;
+    while (bx < wW) {
+      const bw = 34 + ((i * 53) % 40);
+      const bh = 30 + ((i * 31) % 60);
+      x.fillRect(bx, horizon - bh, bw, bh + 6);
+      x.fillStyle = 'rgba(255,184,107,.55)';
+      x.fillRect(bx + bw * 0.3, horizon - bh * 0.6, 5, 5);
+      x.fillStyle = 'rgba(6,10,18,.9)';
+      bx += bw + 18; i++;
+    }
+
+    // vegetation
+    x.strokeStyle = 'rgba(60,180,140,.45)';
+    for (let k = 0; k < 26; k++) {
+      const px = ((k * 173) % wW);
+      const ph = (k % 5) / 5;
+      const py = horizon + 10 + ph * (wH - horizon);
+      const hgt = 10 + ph * 46;
+      x.beginPath();
+      x.moveTo(px, py);
+      x.quadraticCurveTo(px + Math.sin(t + k) * 6, py - hgt * 0.6, px + Math.sin(t + k) * 10, py - hgt);
+      x.stroke();
+    }
+
+    // residents with labels + shadows
+    x.textAlign = 'center';
+    residents.forEach(r => {
+      const px = r.x * wW;
+      const py = horizon + (r.y - 0.6) * (wH - horizon) * 1.6;
+      const s = 9 + r.z * 20;
+      const walk = Math.sin(t * 6 + r.ph);
+
+      x.fillStyle = 'rgba(0,0,0,.35)';
+      x.beginPath(); x.ellipse(px, py, s * 0.5, s * 0.14, 0, 0, Math.PI * 2); x.fill();
+
+      // legs
+      x.strokeStyle = r.tint;
+      x.lineWidth = Math.max(1.4, s * 0.13);
+      x.beginPath();
+      x.moveTo(px, py - s * 0.75); x.lineTo(px - s * 0.2 + walk * s * 0.18, py);
+      x.moveTo(px, py - s * 0.75); x.lineTo(px + s * 0.2 - walk * s * 0.18, py);
+      x.stroke();
+
+      // torso
+      x.beginPath();
+      x.moveTo(px, py - s * 1.6);
+      x.lineTo(px, py - s * 0.7);
+      x.stroke();
+
+      // arms
+      x.lineWidth = Math.max(1, s * 0.09);
+      x.beginPath();
+      x.moveTo(px, py - s * 1.5); x.lineTo(px - s * 0.3 + walk * s * 0.14, py - s * 0.85);
+      x.moveTo(px, py - s * 1.5); x.lineTo(px + s * 0.3 - walk * s * 0.14, py - s * 0.85);
+      x.stroke();
+
+      // head
+      x.fillStyle = r.tint;
+      x.beginPath(); x.arc(px, py - s * 1.78, s * 0.2, 0, Math.PI * 2); x.fill();
+
+      // name label
+      x.font = '600 ' + Math.max(9, s * 0.34) + 'px ui-sans-serif,system-ui,sans-serif';
+      x.fillStyle = 'rgba(223,232,245,.9)';
+      x.fillText(r.name, px, py - s * 2.25);
+      x.strokeStyle = 'rgba(90,209,255,.35)';
+      x.lineWidth = 1;
+      x.strokeRect(px - x.measureText(r.name).width / 2 - 5, py - s * 2.25 - Math.max(9, s * 0.34) - 4,
+                   x.measureText(r.name).width + 10, Math.max(9, s * 0.34) + 9);
+    });
+
+    // HUD
+    x.textAlign = 'left';
+    x.font = '11px ui-monospace,monospace';
+    x.fillStyle = 'rgba(90,209,255,.8)';
+    x.fillText('SPECTATOR · FREE CAM · UE 5.8', 14, 22);
+    x.textAlign = 'right';
+    x.fillStyle = 'rgba(142,163,191,.9)';
+    x.fillText('WORLD DAY ' + (1 + Math.floor(t / 30)), wW - 14, 22);
+
+    // fps-ish counters
+    const a = document.getElementById('s-agents');
+    const b = document.getElementById('s-tick');
+    const d = document.getElementById('s-day');
+    if (a) a.textContent = residents.length;
+    if (b) b.textContent = ticks.toLocaleString();
+    if (d) d.textContent = (1 + Math.floor(t / 30));
+  }
+
+  function frame(now) { step(); drawHero(now); drawWatcher(now); requestAnimationFrame(frame); }
+
+  function onResize() { sizeHero(); sizeWatcher(); }
+  window.addEventListener('resize', onResize);
+  onResize();
+  requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
